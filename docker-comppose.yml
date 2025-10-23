@@ -1,18 +1,20 @@
+version: '3.8'
+
 services:
   db:
     image: mysql:latest
     container_name: mysql-container
     restart: on-failure
     environment:
-      MYSQL_ROOT_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: Root@123
       MYSQL_DATABASE: automation5
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./db-init.sql:/docker-entrypoint-initdb.d/db-init.sql:ro   # initialize DB from dump
     networks:
       - my-network
-
 
   backend:
     build: ./.
@@ -25,9 +27,11 @@ services:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: automation5
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/automation4?createDatabaseIfNotExist=true&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/automation5?useSSL=false&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_DATASOURCE_PASSWORD: Root@123
+    depends_on:
+      - db
     networks:
       - my-network
 
@@ -51,7 +55,7 @@ services:
     networks:
       - my-network
 
-  anugularapi:
+  angularapi:
     image: angular:latest
     container_name: angular-container
     restart: on-failure
@@ -60,7 +64,6 @@ services:
       - "4200:4200"
     networks:
       - my-network
-  
 
 networks:
   my-network:
